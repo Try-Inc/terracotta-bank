@@ -35,6 +35,9 @@ public class SeleniumSupport {
 
 		
 		FirefoxOptions options = new FirefoxOptions();
+		 
+		options.addArguments("--no-sandbox");
+                options.addArguments("--disable-dev-shm-usage");
 		options.addArguments("-headless");
 		options.setProfile(profile);
 
