@@ -4,7 +4,7 @@ This sample application is based on https://github.com/terracotta-bank/terracott
 
 **Warning**: The computer running this application will be vulnerable to attacks, please take appropriate precautions.
 
-# Running standalone
+# Running standalone:
 
 You can run Terracotta Bank locally on any machine with Java 1.8 RE installed.
 
