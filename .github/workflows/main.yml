@@ -27,7 +27,9 @@ jobs:
       - uses: gradle/gradle-build-action@v2.0.0
       - name: Setup Firefox
         uses: browser-actions/setup-firefox@v0.0.0
-      
+      #This step is optional, the agent may already be inside of the container.
+      - name: Download agent
+        run: curl --fail --silent --location "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.contrastsecurity&a=contrast-agent&v=LATEST" -o contrast.jar
 
       - name: Gradle Build Action
         # You may pin to the exact commit or the version.
