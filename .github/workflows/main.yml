@@ -15,82 +15,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  contrast-assess:
-    name: Contrast Assess
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      - uses: gradle/gradle-build-action@v2.0.0
-      - name: Setup Firefox
-        uses: browser-actions/setup-firefox@v0.0.0
-      #This step is optional, the agent may already be inside of the container.
-      - name: Download agent
-        run: curl --fail --silent --location "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.contrastsecurity&a=contrast-agent&v=LATEST" -o contrast.jar
-
-      - name: Gradle Build Action
-        # You may pin to the exact commit or the version.
-        # uses: gradle/gradle-build-action@4137be6a8bf7d7133955359dbd952c0ca73b1021 
-        run: ./gradlew cleanTest test
-        env:
-          CONTRAST__API__URL: ${{ secrets.CONTRAST__API__URL }}
-          CONTRAST__API__ORGANIZATION_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
-          CONTRAST__API__USER_NAME: ${{ secrets.CONTRAST__API__USER_NAME }}
-          CONTRAST__API__API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
-          CONTRAST__API__SERVICE_KEY: ${{ secrets.CONTRAST__API__SERVICE_KEY }}
-          
-  contrast-oss:
-    name: Contrast OSS
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.x]
-    permissions:
-      security-events: write
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Cache node modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - run: npm install
-      - run: npm install -g @contrast/contrast-cli
-      
-      - run: contrast-cli --api_key $CONTRAST_API_KEY --authorization $CONTRAST_AUTHORIZATION --organization_id $CONTRAST_ORG_ID --host $CONTRAST_HOST --application_id $CONTRAST_APPLICATION_ID --language $LANGUAGE
-        name: Contrast OSS Submit
-        env:
-          CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
-          CONTRAST_AUTHORIZATION: ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}
-          CONTRAST_ORG_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
-          CONTRAST_HOST: ${{ secrets.CONTRAST__API__URL }}
-          CONTRAST_APPLICATION_ID: ${{ secrets.CONTRAST_APPLICATION_ID }}
-          LANGUAGE: "JAVA"
-          
-      - run: contrast-cli -r -f -s high --silent --api_key $CONTRAST_API_KEY --authorization $CONTRAST_AUTHORIZATION --organization_id $CONTRAST_ORG_ID --host $CONTRAST_HOST --application_id $CONTRAST_APPLICATION_ID --language $LANGUAGE
-        name: Contrast OSS Check
-        env:
-          CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
-          CONTRAST_AUTHORIZATION: ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}
-          CONTRAST_ORG_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
-          CONTRAST_HOST: ${{ secrets.CONTRAST__API__URL }}
-          CONTRAST_APPLICATION_ID: ${{ secrets.CONTRAST_APPLICATION_ID }}
-          LANGUAGE: "JAVA"          
+   
          
   contrast-static-scan:
     name: Contrast Static Scan
@@ -131,7 +56,7 @@ jobs:
           LANGUAGE: "JAVA"
       
       - name: Get latest scan id
-        run: echo "::set-output name=scan-meta::$(curl --fail --silent --location -H format('API-Key{0} $CONTRAST_API_KEY', ':') -H format('Authorization{0} $CONTRAST_AUTHORIZATION_HEADER', ':') https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc)\n"
+        run: echo "::set-output name=scan-meta::$(curl --fail --silent --location -H $API_HEADER -H $AUTH_HEADER https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc)\n"
         id: lastscan
         env:
           CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
@@ -139,6 +64,8 @@ jobs:
           CONTRAST_ORG_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
           CONTRAST_HOST: ${{ secrets.CONTRAST__API__URL }}
           CONTRAST_PROJECT_ID: ${{ secrets.CONTRAST_PROJECT_ID }}
+          API_HEADER: format('API-Key{0} $CONTRAST_API_KEY', ':')
+          AUTH_HEADER: format('Authorization{0} $CONTRAST_AUTHORIZATION_HEADER', ':')
         # run: contrast-cli --api_key $CONTRAST_API_KEY --authorization $CONTRAST_AUTHORIZATION --organization_id $CONTRAST_ORG_ID --host $CONTRAST_HOST --project_id $CONTRAST_PROJECT_ID --language $LANGUAGE --scan ./build/libs/terracotta-bank-servlet-0.0.1-SNAPSHOT.jar)\n"
       
       
