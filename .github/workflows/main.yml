@@ -56,7 +56,8 @@ jobs:
           LANGUAGE: "JAVA"
       
       - name: Get latest scan id
-        run: echo "::set-output name=scan-meta::$(curl --fail --silent --location -H $API_HEADER -H $AUTH_HEADER https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc)\n"
+        #run: echo "::set-output name=scan-meta::$(curl --fail --silent --location -H $API_HEADER -H $AUTH_HEADER https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc)\n"
+        run: echo "curl --fail --silent --location -H $API_HEADER -H $AUTH_HEADER https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc\n"
         id: lastscan
         env:
           CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
