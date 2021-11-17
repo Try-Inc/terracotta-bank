@@ -25,6 +25,8 @@ jobs:
         node-version: [14.x]
     permissions:
       security-events: write
+    outputs:
+      scanMetaJson: ${{ steps.lastscan.outputs.scan-meta }}
     steps:
       - name: Setup Java
         uses: actions/setup-java@v2
@@ -55,10 +57,9 @@ jobs:
           CONTRAST_PROJECT_ID: ${{ secrets.CONTRAST_PROJECT_ID }}
           LANGUAGE: "JAVA"
       
-      - name: Get latest scan id
-        #run: echo "::set-output name=scan-meta::$(curl --fail --silent --location -H $API_HEADER -H $AUTH_HEADER https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc)\n"
-        run: echo "curl --fail --silent --location -H $API_HEADER -H $AUTH_HEADER https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc\n"
-        id: lastscan
+      - id: lastscan
+        name: Get latest scan id
+        run: echo "::set-output name=scan-meta::$(curl --fail --silent --location -H $API_HEADER -H $AUTH_HEADER https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc)\n"
         env:
           CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
           CONTRAST_AUTHORIZATION: ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}
@@ -75,7 +76,8 @@ jobs:
         
         
        # run: curl --fail --silent --location "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.contrastsecurity&a=contrast-agent&v=LATEST" -o contrast.jar        
-        run: echo "-H API-Key $CONTRAST_API_KEY -H Authorization $CONTRAST_AUTHORIZATION $CONTRAST_HOST/api/sast/organizations/$CONTRAST_ORG_ID/projects/$CONTRAST_PROJECT_ID/scans/$CONTRAST_SCAN_ID/raw-output"
+       # run: echo "-H API-Key $CONTRAST_API_KEY -H Authorization $CONTRAST_AUTHORIZATION $CONTRAST_HOST/api/sast/organizations/$CONTRAST_ORG_ID/projects/$CONTRAST_PROJECT_ID/scans/$CONTRAST_SCAN_ID/raw-output"
+        run: echo ${{steps.lastscan.outputs.scan-meta}}
         env:
           CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
           CONTRAST_AUTHORIZATION: ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}
@@ -84,8 +86,8 @@ jobs:
           CONTRAST_PROJECT_ID: ${{ secrets.CONTRAST_PROJECT_ID }}
           CONTRAST_SCAN_ID: ${{ fromJson(steps.lastscan.outputs.scan-meta).content.id }}
 
-      - name: Upload Contrast Scan Results
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: target/contrast-scan-reports/contrast-scan-results.sarif.json
+      #- name: Upload Contrast Scan Results
+      #  uses: github/codeql-action/upload-sarif@v1
+      #  with:
+      #    sarif_file: target/contrast-scan-reports/contrast-scan-results.sarif.json
                   
