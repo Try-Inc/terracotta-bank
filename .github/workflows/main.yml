@@ -138,7 +138,7 @@ jobs:
           CONTRAST_ORG_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
           CONTRAST_HOST: ${{ secrets.CONTRAST__API__URL }}
           CONTRAST_PROJECT_ID: ${{ secrets.CONTRAST_PROJECT_ID }}
-          CONTRAST_SCAN_ID: ${{ steps.contrast.outputs.scan-id }}
+          CONTRAST_SCAN_ID: ${{ fromJson(steps.contrast.outputs.scan-id).id }}
 
       - name: Upload Contrast Scan Results
         uses: github/codeql-action/upload-sarif@v1
