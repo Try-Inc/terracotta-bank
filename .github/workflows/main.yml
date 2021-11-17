@@ -70,11 +70,21 @@ jobs:
           AUTH_HEADER: format('Authorization{0} $CONTRAST_AUTHORIZATION_HEADER', ':')
         # run: contrast-cli --api_key $CONTRAST_API_KEY --authorization $CONTRAST_AUTHORIZATION --organization_id $CONTRAST_ORG_ID --host $CONTRAST_HOST --project_id $CONTRAST_PROJECT_ID --language $LANGUAGE --scan ./build/libs/terracotta-bank-servlet-0.0.1-SNAPSHOT.jar)\n"
       
-      
+      - id: echo-results
+        run: curl --fail --silent --location -H $API_HEADER -H $AUTH_HEADER https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc
+        env:
+          CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
+          CONTRAST_AUTHORIZATION: ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}
+          CONTRAST_ORG_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
+          CONTRAST_HOST: ${{ secrets.CONTRAST__API__URL }}
+          CONTRAST_PROJECT_ID: ${{ secrets.CONTRAST_PROJECT_ID }}
+          API_HEADER: format('API-Key{0} $CONTRAST_API_KEY', ':')
+          AUTH_HEADER: format('Authorization{0} $CONTRAST_AUTHORIZATION_HEADER', ':')
+          
+          
+          
       - name: Download Sarif Scan results
       
-        
-        
        # run: curl --fail --silent --location "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.contrastsecurity&a=contrast-agent&v=LATEST" -o contrast.jar        
        # run: echo "-H API-Key $CONTRAST_API_KEY -H Authorization $CONTRAST_AUTHORIZATION $CONTRAST_HOST/api/sast/organizations/$CONTRAST_ORG_ID/projects/$CONTRAST_PROJECT_ID/scans/$CONTRAST_SCAN_ID/raw-output"
         run: echo ${{steps.lastscan.outputs.scanMetaJson}}
