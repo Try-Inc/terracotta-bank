@@ -131,7 +131,7 @@ jobs:
           LANGUAGE: "JAVA"
       - name: Download Sarif Scan results
        # run: curl --fail --silent --location "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.contrastsecurity&a=contrast-agent&v=LATEST" -o contrast.jar        
-        run: echo "-H API-Key: $CONTRAST_API_KEY -H Authorization: $CONTRAST_AUTHORIZATION $CONTRAST_HOST/api/sast/organizations/$CONTRAST_ORG_ID/projects/$CONTRAST_PROJECT_ID/scans/$CONTRAST_SCAN_ID/raw-output"
+        run: echo "-H API-Key $CONTRAST_API_KEY -H Authorization $CONTRAST_AUTHORIZATION $CONTRAST_HOST/api/sast/organizations/$CONTRAST_ORG_ID/projects/$CONTRAST_PROJECT_ID/scans/$CONTRAST_SCAN_ID/raw-output"
         env:
           CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
           CONTRAST_AUTHORIZATION: ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}
