@@ -1,11 +1,11 @@
 name: Contrast Security Pipeline
 env:
-  CONTRAST_ORG_ID: a494820a-ae99-4833-980c-e763fcbe1f98
-  CONTRAST_HOST: https://eval.contrastsecurity.com/Contrast
+  CONTRAST_ORG_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
+  CONTRAST_HOST: ${{ secrets.CONTRAST__API__URL }}
    #For Scan:
-  CONTRAST_PROJECT_ID: 5e3941c8-cf8e-40e5-82d5-f86110866512
+  CONTRAST_PROJECT_ID: ${{ secrets.CONTRAST_PROJECT_ID }}
    #For Assess/OSS:
-  CONTRAST_APPLICATION_ID: 0de45c4b-b868-4ae9-893d-58c4fbc8aeaa
+  CONTRAST_APPLICATION_ID: ${{ secrets.CONTRAST_APPLICATION_ID }}
 
 # Controls when the workflow will run
 on:
