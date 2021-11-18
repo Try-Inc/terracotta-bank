@@ -1,6 +1,11 @@
-# This is a basic workflow to help you get started with Actions
-
-name: Run Selenium tests on Contrast Assess
+name: Contrast Security Pipeline
+env:
+  CONTRAST_ORG_ID: a494820a-ae99-4833-980c-e763fcbe1f98
+  CONTRAST_HOST: https://eval.contrastsecurity.com/Contrast
+   #For Scan:
+  CONTRAST_PROJECT_ID: 5e3941c8-cf8e-40e5-82d5-f86110866512
+   #For Assess/OSS:
+  CONTRAST_APPLICATION_ID: 0de45c4b-b868-4ae9-893d-58c4fbc8aeaa
 
 # Controls when the workflow will run
 on:
@@ -15,18 +20,32 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-   
-         
-  contrast-static-scan:
-    name: Contrast Static Scan
+  contrast-oss-scan:
+    name: Run Contrast OSS Scan
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [14.x]
     permissions:
       security-events: write
-    outputs:
-      scanMetaJson: ${{ steps.lastscan.outputs.scan-meta }}
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+
+      - name: Install Contrast CLI
+        run: npm install & npm install -g @contrast/contrast-cli
+        
+      - name: Upload and Scan File
+        run: contrast-cli --report --fail --cve_severity high --cve_threshold 0 --api_key ${{ secrets.CONTRAST__API__API_KEY }} --authorization ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }} --organization_id $CONTRAST_ORG_ID --host $CONTRAST_HOST --application_id $CONTRAST_APPLICATION_ID --language JAVA
+        
+  contrast-static-scan:
+    name: Run Contrast Scan
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    permissions:
+      security-events: write
     steps:
       - name: Setup Java
         uses: actions/setup-java@v2
@@ -36,68 +55,52 @@ jobs:
 
       - uses: actions/checkout@v2
       - uses: gradle/gradle-build-action@v2.0.0
-
-      - run: npm install
-      - run: npm install -g @contrast/contrast-cli
       
-      - name: Gradle Build Action
-        # You may pin to the exact commit or the version.
-        # uses: gradle/gradle-build-action@4137be6a8bf7d7133955359dbd952c0ca73b1021 
+      - name: Create Binary
         run: ./gradlew clean jar
         
-      - name: Contrast Scan
-        run: |
-            echo "::set-output name=scan-meta::$(contrast-cli --api_key $CONTRAST_API_KEY --authorization $CONTRAST_AUTHORIZATION --organization_id $CONTRAST_ORG_ID --host $CONTRAST_HOST --project_id $CONTRAST_PROJECT_ID --language $LANGUAGE --scan ./build/libs/terracotta-bank-servlet-0.0.1-SNAPSHOT.jar)\n"
-        id: contrast 
-        env:
-          CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
-          CONTRAST_AUTHORIZATION: ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}
-          CONTRAST_ORG_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
-          CONTRAST_HOST: ${{ secrets.CONTRAST__API__URL }}
-          CONTRAST_PROJECT_ID: ${{ secrets.CONTRAST_PROJECT_ID }}
-          LANGUAGE: "JAVA"
-      
-      - id: lastscan
-        name: Get latest scan id
-        run: echo "::set-output name=scan-meta::$(curl --fail --silent --location -H $API_HEADER -H $AUTH_HEADER https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc)\n"
-        env:
-          CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
-          CONTRAST_AUTHORIZATION: ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}
-          CONTRAST_ORG_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
-          CONTRAST_HOST: ${{ secrets.CONTRAST__API__URL }}
-          CONTRAST_PROJECT_ID: ${{ secrets.CONTRAST_PROJECT_ID }}
-          API_HEADER: format('API-Key{0} $CONTRAST_API_KEY', ':')
-          AUTH_HEADER: format('Authorization{0} $CONTRAST_AUTHORIZATION_HEADER', ':')
-        # run: contrast-cli --api_key $CONTRAST_API_KEY --authorization $CONTRAST_AUTHORIZATION --organization_id $CONTRAST_ORG_ID --host $CONTRAST_HOST --project_id $CONTRAST_PROJECT_ID --language $LANGUAGE --scan ./build/libs/terracotta-bank-servlet-0.0.1-SNAPSHOT.jar)\n"
-      
-      - id: echo-results
-        run: echo "curl --fail --silent --location -H $API_HEADER -H $AUTH_HEADER https://eval.contrastsecurity.com/Contrast/api/sast/organizations/d651f7d1-59c2-46f0-a180-025ab1027891/projects/c96fab3b-1b19-42b7-a13c-e9a08787d8ac/scans?page=0&size=1&sort=createdTime%2Cdesc"
-        env:
-          CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
-          CONTRAST_AUTHORIZATION: ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}
-          CONTRAST_ORG_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
-          CONTRAST_HOST: ${{ secrets.CONTRAST__API__URL }}
-          CONTRAST_PROJECT_ID: ${{ secrets.CONTRAST_PROJECT_ID }}
-          API_HEADER: format('API-Key{0} $CONTRAST_API_KEY', ':')
-          AUTH_HEADER: format('Authorization{0} $CONTRAST_AUTHORIZATION_HEADER', ':')
-          
-          
-          
-      - name: Download Sarif Scan results
-      
-       # run: curl --fail --silent --location "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.contrastsecurity&a=contrast-agent&v=LATEST" -o contrast.jar        
-       # run: echo "-H API-Key $CONTRAST_API_KEY -H Authorization $CONTRAST_AUTHORIZATION $CONTRAST_HOST/api/sast/organizations/$CONTRAST_ORG_ID/projects/$CONTRAST_PROJECT_ID/scans/$CONTRAST_SCAN_ID/raw-output"
-        run: echo ${{steps.lastscan.outputs.scanMetaJson}}
-        env:
-          CONTRAST_API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
-          CONTRAST_AUTHORIZATION: ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}
-          CONTRAST_ORG_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
-          CONTRAST_HOST: ${{ secrets.CONTRAST__API__URL }}
-          CONTRAST_PROJECT_ID: ${{ secrets.CONTRAST_PROJECT_ID }}
-          CONTRAST_SCAN_ID: 1
+      - name: Install Contrast CLI
+        run: npm install & npm install -g @contrast/contrast-cli
+        
+      - name: Upload and Scan File
+        run: contrast-cli --api_key ${{ secrets.CONTRAST__API__API_KEY }} --authorization ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }} --organization_id $CONTRAST_ORG_ID --host $CONTRAST_HOST --project_id $CONTRAST_PROJECT_ID --language JAVA --wait_for_scan --scan ./build/libs/terracotta-bank-servlet-0.0.1-SNAPSHOT.jar
 
-      #- name: Upload Contrast Scan Results
-      #  uses: github/codeql-action/upload-sarif@v1
-      #  with:
-      #    sarif_file: target/contrast-scan-reports/contrast-scan-results.sarif.json
-                  
+      - id: scanhistory
+        name: Obtain Scan Id
+        run: echo "::set-output name=scan-meta::$(curl -v --fail --location -H "API-KEY:${{ secrets.CONTRAST__API__API_KEY }}" -H "Authorization:${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}" $CONTRAST_HOST/api/sast/organizations/$CONTRAST_ORG_ID/projects/$CONTRAST_PROJECT_ID/scans?page=0&size=1&sort=createdTime%2Cdesc)"
+
+      - name: Download Scan Results (Sarif)
+        run: echo ${{ steps.scanhistory.outputs.scan-meta }} && curl --fail --location -H "API-KEY:${{ secrets.CONTRAST__API__API_KEY }}" -H "Authorization:${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}" $CONTRAST_HOST/api/sast/organizations/$CONTRAST_ORG_ID/projects/$CONTRAST_PROJECT_ID/scans/$CONTRAST_SCAN_ID/raw-output -o contrast-scan-results.sarif.json
+        env:
+          CONTRAST_SCAN_ID: ${{fromJson(steps.scanhistory.outputs.scan-meta).content[0].id}}
+          
+      - name: Upload Scan Results to Github (Optional)
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: contrast-scan-results.sarif.json
+          
+  contrast-assess:
+    name: Run Tests with Contrast Assess
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+     - uses: actions/checkout@v2
+     - uses: gradle/gradle-build-action@v2.0.0
+     - name: Setup Firefox
+       uses: browser-actions/setup-firefox@v0.0.0
+
+     #This step is optional, the agent may already be inside of the container.
+     - name: Download agent
+       run: curl --fail --silent --location "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.contrastsecurity&a=contrast-agent&v=LATEST" -o contrast.jar
+
+     - name: Gradle Build Action 
+       run: ./gradlew cleanTest test
+       env:
+         CONTRAST__API__URL: $CONTRAST_HOST
+         CONTRAST__API__ORGANIZATION_ID: $CONTRAST_ORG_ID
+         CONTRAST__API__USER_NAME: ${{ secrets.CONTRAST__API__USER_NAME }}
+         CONTRAST__API__API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
+         CONTRAST__API__SERVICE_KEY: ${{ secrets.CONTRAST__API__SERVICE_KEY }}
