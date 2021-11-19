@@ -1,11 +1,11 @@
 name: Contrast Security Pipeline
 env:
-  CONTRAST__API__ORGANIZATION_ID: a494820a-ae99-4833-980c-e763fcbe1f98
+  CONTRAST__API__ORGANIZATION_ID: d651f7d1-59c2-46f0-a180-025ab1027891
   CONTRAST__API__URL: https://eval.contrastsecurity.com/Contrast
    #For Scan:
-  CONTRAST_PROJECT_ID: 5e3941c8-cf8e-40e5-82d5-f86110866512
+  CONTRAST_PROJECT_ID: c96fab3b-1b19-42b7-a13c-e9a08787d8ac
    #For Assess/OSS:
-  CONTRAST_APPLICATION_ID: 0de45c4b-b868-4ae9-893d-58c4fbc8aeaa
+  CONTRAST_APPLICATION_ID: 13b8391d-a504-478c-938a-1a8593d2cdae
 
 # Controls when the workflow will run
 on:
