@@ -13,7 +13,7 @@ You can run Terracotta Bank locally on any machine with Java 1.8 RE installed.
 1. Run the application using ./gradlew bootRun
 1. Browse the application at http://localhost:8080/
 
-# Running in Docker
+# Running in Docker:
 
 You can run Terracotta Bank within a Docker container. 
 
