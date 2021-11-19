@@ -37,7 +37,7 @@ You can run Terracotta Bank within a Docker container.
 1. Run `terraform apply` to build the infrastructure that you need in Azure, this will output the web address for the application.
 1. Run `terraform destroy` when you would like to stop the app service and release the resources.
 
-# Running automated tests
+# Running automated tests:
 
 There are a number of Seleneum tests which you can use to reveal vulnerabilities.
 
