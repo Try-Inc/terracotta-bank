@@ -20,65 +20,6 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  contrast-oss-scan:
-    name: Run Contrast OSS Scan
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.x]
-    permissions:
-      security-events: write
-    steps:
-      - name: Checkout Project
-        uses: actions/checkout@v2
-
-      - name: Install Contrast CLI
-        run: npm install & npm install -g @contrast/contrast-cli
-        
-      - name: Upload and Scan File
-        run: contrast-cli --report --fail --cve_severity high --cve_threshold 0 --api_key ${{ secrets.CONTRAST__API__API_KEY }} --authorization ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }} --organization_id $CONTRAST_ORG_ID --host $CONTRAST_HOST --application_id $CONTRAST_APPLICATION_ID --language JAVA
-        
-  contrast-static-scan:
-    name: Run Contrast Scan
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.x]
-    permissions:
-      security-events: write
-    steps:
-      - name: Setup Java
-        uses: actions/setup-java@v2
-        with:
-          java-version: 11
-          distribution: temurin
-
-      - uses: actions/checkout@v2
-      - uses: gradle/gradle-build-action@v2.0.0
-      
-      - name: Create Binary
-        run: ./gradlew clean jar
-        
-      - name: Install Contrast CLI
-        run: npm install & npm install -g @contrast/contrast-cli
-        
-      - name: Upload and Scan File
-        run: contrast-cli --api_key ${{ secrets.CONTRAST__API__API_KEY }} --authorization ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }} --organization_id $CONTRAST_ORG_ID --host $CONTRAST_HOST --project_id $CONTRAST_PROJECT_ID --language JAVA --wait_for_scan --scan ./build/libs/terracotta-bank-servlet-0.0.1-SNAPSHOT.jar
-
-      - id: scanhistory
-        name: Obtain Scan Id
-        run: echo "::set-output name=scan-meta::$(curl -v --fail --location -H "API-KEY:${{ secrets.CONTRAST__API__API_KEY }}" -H "Authorization:${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}" $CONTRAST_HOST/api/sast/organizations/$CONTRAST_ORG_ID/projects/$CONTRAST_PROJECT_ID/scans?page=0&size=1&sort=createdTime%2Cdesc)"
-
-      - name: Download Scan Results (Sarif)
-        run: echo ${{ steps.scanhistory.outputs.scan-meta }} && curl --fail --location -H "API-KEY:${{ secrets.CONTRAST__API__API_KEY }}" -H "Authorization:${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}" $CONTRAST_HOST/api/sast/organizations/$CONTRAST_ORG_ID/projects/$CONTRAST_PROJECT_ID/scans/$CONTRAST_SCAN_ID/raw-output -o contrast-scan-results.sarif.json
-        env:
-          CONTRAST_SCAN_ID: ${{fromJson(steps.scanhistory.outputs.scan-meta).content[0].id}}
-          
-      - name: Upload Scan Results to Github (Optional)
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: contrast-scan-results.sarif.json
-          
   contrast-assess:
     name: Run Tests with Contrast Assess
     # The type of runner that the job will run on
@@ -99,8 +40,8 @@ jobs:
      - name: Gradle Build Action 
        run: ./gradlew cleanTest test
        env:
-         CONTRAST__API__URL: $CONTRAST_HOST
-         CONTRAST__API__ORGANIZATION_ID: $CONTRAST_ORG_ID
+         CONTRAST__API__URL: ${{ secrets.CONTRAST__API__URL }}
+         CONTRAST__API__ORGANIZATION_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
          CONTRAST__API__USER_NAME: ${{ secrets.CONTRAST__API__USER_NAME }}
          CONTRAST__API__API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
          CONTRAST__API__SERVICE_KEY: ${{ secrets.CONTRAST__API__SERVICE_KEY }}
