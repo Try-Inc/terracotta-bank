@@ -66,6 +66,8 @@ jobs:
           artifact: ./build/libs/terracotta-bank-servlet-0.0.1-SNAPSHOT.jar
           # The api url of the Contrast Platform.
           api_url: "https://eval.contrastsecurity.com/Contrast"
+          # The path in which to save the SARIF results.
+          sarif: contrast-scan-results.sarif.json
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,14 +76,14 @@ jobs:
           CONTRAST__API__SERVICE_KEY: ${{ secrets.CONTRAST__API_USER_SERVICE_KEY }}
           CONTRAST__API__API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
           
-      - id: scanhistory
-        name: Obtain Scan Id
-        run: echo "::set-output name=scan-meta::$(curl -v --fail --location -H "API-KEY:${{ secrets.CONTRAST__API__API_KEY }}" -H "Authorization:${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}" $CONTRAST__API__URL/api/sast/organizations/$CONTRAST__API__ORGANIZATION_ID/projects/$CONTRAST_PROJECT_ID/scans?page=0&size=1&sort=createdTime%2Cdesc)"
+     # - id: scanhistory
+     #   name: Obtain Scan Id
+     #   run: echo "::set-output name=scan-meta::$(curl -v --fail --location -H "API-KEY:${{ secrets.CONTRAST__API__API_KEY }}" -H "Authorization:${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}" $CONTRAST__API__URL/api/sast/organizations/$CONTRAST__API__ORGANIZATION_ID/projects/$CONTRAST_PROJECT_ID/scans?page=0&size=1&sort=createdTime%2Cdesc)"
 
-      - name: Download Scan Results (Sarif)
-        run: echo ${{ steps.scanhistory.outputs.scan-meta }} && curl --fail --location -H "API-KEY:${{ secrets.CONTRAST__API__API_KEY }}" -H "Authorization:${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}" $CONTRAST__API__URL/api/sast/organizations/$CONTRAST__API__ORGANIZATION_ID/projects/$CONTRAST_PROJECT_ID/scans/$CONTRAST_SCAN_ID/raw-output -o contrast-scan-results.sarif.json
-        env:
-          CONTRAST_SCAN_ID: ${{fromJson(steps.scanhistory.outputs.scan-meta).content[0].id}}
+     # - name: Download Scan Results (Sarif)
+     #   run: echo ${{ steps.scanhistory.outputs.scan-meta }} && curl --fail --location -H "API-KEY:${{ secrets.CONTRAST__API__API_KEY }}" -H "Authorization:${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}" $CONTRAST__API__URL/api/sast/organizations/$CONTRAST__API__ORGANIZATION_ID/projects/$CONTRAST_PROJECT_ID/scans/$CONTRAST_SCAN_ID/raw-output -o contrast-scan-results.sarif.json
+     #   env:
+     #     CONTRAST_SCAN_ID: ${{fromJson(steps.scanhistory.outputs.scan-meta).content[0].id}}
           
       #- name: Upload Scan Results to Github (Optional)
       #  uses: github/codeql-action/upload-sarif@v1
