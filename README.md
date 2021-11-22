@@ -46,7 +46,7 @@ There are a number of Seleneum tests which you can use to reveal vulnerabilities
 1. Ensure you have the Firefox browser installed.
 1. Run the application using `./gradlew cleanTest test`
 
-# Running automated tests in Docker
+# Running automated tests in Docker:
  
 There are a number of Seleneum tests which you can use to reveal vulnerabilities in a Docker container.
  
