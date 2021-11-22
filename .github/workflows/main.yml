@@ -70,7 +70,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CONTRAST__API__USER_NAME: "roman.yankin@contrastsecurity.com"
-          CONTRAST__API__ORGANIZATION_ID: $CONTRAST__API__ORGANIZATION_ID
+          CONTRAST__API__ORGANIZATION_ID: "d651f7d1-59c2-46f0-a180-025ab1027891"
           CONTRAST__API__SERVICE_KEY: ${{ secrets.CONTRAST__API_USER_SERVICE_KEY }}
           CONTRAST__API__API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
           
