@@ -65,6 +65,16 @@ jobs:
       - name: Upload and Scan File
         run: contrast-cli --api_key ${{ secrets.CONTRAST__API__API_KEY }} --authorization ${{ secrets.CONTRAST_AUTHORIZATION_HEADER }} --organization_id $CONTRAST__API__ORGANIZATION_ID --host $CONTRAST__API__URL --project_id $CONTRAST_PROJECT_ID --language JAVA --wait_for_scan --scan ./build/libs/terracotta-bank-servlet-0.0.1-SNAPSHOT.jar
 
+      - name: Execute Contrast Scan
+        uses: Contrast-Security-OSS/contrastscan-action@v1.0.0
+        with:
+          # artifact to scan
+          artifact: ./build/libs/terracotta-bank-servlet-0.0.1-SNAPSHOT.jar
+          # The api url of the Contrast Platform.
+          api_url: $CONTRAST__API__URL
+          # The path in which to save the SARIF results.
+          sarif: contrast-scan-results.sarif.json
+          
       - id: scanhistory
         name: Obtain Scan Id
         run: echo "::set-output name=scan-meta::$(curl -v --fail --location -H "API-KEY:${{ secrets.CONTRAST__API__API_KEY }}" -H "Authorization:${{ secrets.CONTRAST_AUTHORIZATION_HEADER }}" $CONTRAST__API__URL/api/sast/organizations/$CONTRAST__API__ORGANIZATION_ID/projects/$CONTRAST_PROJECT_ID/scans?page=0&size=1&sort=createdTime%2Cdesc)"
@@ -74,10 +84,10 @@ jobs:
         env:
           CONTRAST_SCAN_ID: ${{fromJson(steps.scanhistory.outputs.scan-meta).content[0].id}}
           
-      - name: Upload Scan Results to Github (Optional)
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: contrast-scan-results.sarif.json
+      #- name: Upload Scan Results to Github (Optional)
+      #  uses: github/codeql-action/upload-sarif@v1
+      #  with:
+      #    sarif_file: contrast-scan-results.sarif.json
           
   contrast-assess:
     name: Run Tests with Contrast Assess
