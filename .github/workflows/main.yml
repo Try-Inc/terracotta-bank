@@ -66,8 +66,7 @@ jobs:
           artifact: ./build/libs/terracotta-bank-servlet-0.0.1-SNAPSHOT.jar
           # The api url of the Contrast Platform.
           api_url: $CONTRAST__API__URL
-          # The path in which to save the SARIF results.
-          sarif: contrast-scan-results.sarif.json
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CONTRAST__API__USER_NAME: "<user name>"
