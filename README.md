@@ -54,7 +54,7 @@ There are a number of Seleneum tests which you can use to reveal vulnerabilities
  1. Build the Docker container using `docker build . -f Dockerfile.test -t terracotta-test`
  1. Run the container using `docker run -v $PWD/contrast_security.yaml:/etc/contrast/java/contrast_security.yaml terracotta-test:latest`
 
-## Updating the Docker Image
+## Updating the Docker Image:
 
 You can re-build the docker image (used by Terraform) by running two scripts in order:
 
